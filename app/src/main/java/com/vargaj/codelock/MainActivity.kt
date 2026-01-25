@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vargaj.codelock.ui.theme.CodeLockTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,10 +39,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CheckScreen(client: OkHttpClient) {
-    //
-    var username by remember { mutableStateOf("") }
-    var result by remember { mutableStateOf("") }
-    var loading by remember { mutableStateOf(false) }
+    // VM var
+    var vm: CheckViewModel = viewModel()
 
     // This includes the text box and the check button
     Column(
@@ -54,40 +53,32 @@ fun CheckScreen(client: OkHttpClient) {
         // The stuff above in parenthesis sets parameters for everything contained in the column (text, button)
         // Everything now is in brackets and are the individual things
         OutlinedTextField(
-            value = username,   // The value entered in the text box will be assigned to the username var
-            onValueChange = { username = it }, // Updates username whenever the value is changed
+            value = vm.username.value,   // The value entered in the text box will be assigned to the username var
+            onValueChange = { vm.username.value = it }, // Updates username whenever the value is changed
             label = { Text("LeetCode Username") },  // Default text
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp)) // Spacer to make space between text box and button
 
+
         Button(
             onClick = { // When check is clicked
-                if (username.isNotEmpty()) {
-                    result = "Checking..."  // Set the result var to this
-                    // Launch background coroutine
-                    CoroutineScope(Dispatchers.IO).launch {//
-                        try {
-                            val solved = checkSolvedToday(client, username)
-                            result = if (solved) "✅ Solved today!" else "❌ Not yet solved."
-                        } catch (e: Exception) {
-                            result = "Error: ${e.message}"
-                        }
-                    }
-                } else {
-                    result = "Enter a username first!"
-                }
+                      vm.checkUser() 
             },
+            enabled = !vm.loading.value, // Enabled literally is to set the button (feature in general) as enabled or not. Enabled allows for clicks, not enabled means its greyed out
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Check")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        if (vm.loading.value) {
+            CircularProgressIndicator()
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         Text(
-            text = result,
+            text = vm.result.value,
             style = MaterialTheme.typography.bodyLarge
         )
     }
