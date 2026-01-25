@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vargaj.codelock.ui.theme.CodeLockTheme
+import androidx.compose.ui.platform.LocalFocusManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,7 +41,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CheckScreen(client: OkHttpClient) {
     // VM var
-    var vm: CheckViewModel = viewModel()
+    val vm: CheckViewModel = viewModel()
+    val focusMgr = LocalFocusManager.current
 
     // This includes the text box and the check button
     Column(
@@ -64,7 +66,8 @@ fun CheckScreen(client: OkHttpClient) {
 
         Button(
             onClick = { // When check is clicked
-                      vm.checkUser() 
+                focusMgr.clearFocus()
+                vm.checkUser()
             },
             enabled = !vm.loading.value, // Enabled literally is to set the button (feature in general) as enabled or not. Enabled allows for clicks, not enabled means its greyed out
             modifier = Modifier.fillMaxWidth()
